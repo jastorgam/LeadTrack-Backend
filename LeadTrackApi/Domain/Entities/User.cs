@@ -1,19 +1,18 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson;
 using System.Text.Json.Serialization;
+using LeadTrackApi.Domain.Enums;
 
-namespace LeadTrackApi.Domain.Models
+namespace LeadTrackApi.Domain.Entities
 {
     public class User
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string? Id { get; set; }
-        public string Username { get; set; } = null!;
+        public string Id { get; set; }
+        public string UserName { get; set; } = null!;
         public string Email { get; set; } = null!;
         public string Password { get; set; } = null!;
-        public string Role { get; set; } = null!;
-        public DateTime? CreatedAt { get; set; }
-        public DateTime? LastAccess { get; set; }
+        public string IdRole { get; set; }
     }
 }

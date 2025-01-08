@@ -15,12 +15,11 @@ namespace LeadTrackApi.Application.Business
         {
             password = SecurityUtils.HashPassword(password);
 
-            var resp = await _mongoDBService.Login(email, password);
-            if (resp == null) throw new Exception("Invalid credentials");
+            var resp = await _mongoDBService.Login(email, password) ?? throw new Exception("Invalid credentials");
 
             return new LoginResponse()
             {
-                UserName = resp.Username,
+                UserName = resp.UserName,
                 Token = _jwtService.GenerateToken(resp.Email, resp.Role),
                 Role = resp.Role
             };

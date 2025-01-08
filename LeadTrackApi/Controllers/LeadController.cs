@@ -1,4 +1,6 @@
 ﻿using LeadTrackApi.Application.Interfaces;
+using LeadTrackApi.Domain.Enums;
+using LeadTrackApi.Domain.Models.Request;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,17 +19,14 @@ namespace LeadTrackApi.Controllers
             _logger = logger;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAllUsers()
-        {
-            var users = await _leadBusiness.GetAllUsers();
-            return Ok(users);
-        }
+
+
 
         [HttpPost]
-        public async Task<IActionResult> AddUser(string user, string pass)
+        [Route("addUser")]
+        public async Task<IActionResult> AddUser([FromBody] AddUserRequest ur)
         {
-            var resp = await _leadBusiness.AddUser(user, pass);
+            var resp = await _leadBusiness.AddUser(ur.Email, ur.Password, ur.UserName, ur.idRole);
             return Ok(resp);
         }
     }

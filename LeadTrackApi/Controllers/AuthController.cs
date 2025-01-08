@@ -1,4 +1,5 @@
-﻿using LeadTrackApi.Application.Interfaces;
+﻿using LeadTrack.API.Application.Extensions;
+using LeadTrackApi.Application.Interfaces;
 using LeadTrackApi.Domain.Models.Request;
 using LeadTrackApi.Domain.Models.Response;
 using Microsoft.AspNetCore.Mvc;
@@ -7,7 +8,7 @@ namespace LeadTrackApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AuthController(IAuthBusiness authBusiness) : ControllerBase
+    public class AuthController(IAuthBusiness authBusiness, ILogger<AuthController> logger) : ControllerBase
     {
         private readonly IAuthBusiness _authBusiness = authBusiness;
 
@@ -15,8 +16,6 @@ namespace LeadTrackApi.Controllers
         [Route("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
         {
-            if (loginRequest == null) return BadRequest(new { Error = "Invalid client request" });
-
             try
             {
                 var resp = await _authBusiness.Login(loginRequest.Email, loginRequest.Password);
@@ -25,7 +24,8 @@ namespace LeadTrackApi.Controllers
             }
             catch (Exception e)
             {
-                return BadRequest(new { Error = e.Message });
+                logger.LogError(message: e.ToError().ToString());
+                return Unauthorized();
             }
         }
     }

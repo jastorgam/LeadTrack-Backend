@@ -1,5 +1,7 @@
 ﻿using LeadTrackApi.Application.Interfaces;
-using LeadTrackApi.Domain.Models;
+using LeadTrackApi.Application.Utils;
+using LeadTrackApi.Domain.DTOs;
+using LeadTrackApi.Domain.Enums;
 using LeadTrackApi.Services;
 
 namespace LeadTrackApi.Application.Business
@@ -13,14 +15,11 @@ namespace LeadTrackApi.Application.Business
             _mongoService = mongoDBService;
         }
 
-        public async Task<List<User>> GetAllUsers()
-        {
-            return await _mongoService.GetAsync();
-        }
 
-        public async Task<User> AddUser(string user, string pass)
+        public async Task<UserDto> AddUser(string email, string pass, string name, string idRole)
         {
-            return await _mongoService.AddUser(user, pass);
+            pass = SecurityUtils.HashPassword(pass);
+            return await _mongoService.AddUser(email, pass, name, idRole);
         }
     }
 }

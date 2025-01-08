@@ -24,13 +24,6 @@ namespace LeadTrack.API.Test
 
             serviceCollection.RegisterApplicationExtension();
             serviceCollection.RegisterRepositoryExtension(configuration);
-            //serviceCollection.RegisterInfraestructureExtension(configuration);
-
-
-            // TODO Agregar Handlers correspondientes
-            //serviceCollection.AddMediatR(typeof(SignMandateHandler));
-            //serviceCollection.AddMediatR(typeof(GetMandatePdfHandler));
-            //serviceCollection.AddMediatR(typeof(HasMandateHandler));
 
             ServiceProvider = serviceCollection.BuildServiceProvider();
         }
