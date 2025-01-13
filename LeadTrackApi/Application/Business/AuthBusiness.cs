@@ -23,7 +23,6 @@ namespace LeadTrackApi.Application.Business
                 Token = _jwtService.GenerateToken(resp.Email, resp.Role),
                 Role = resp.Role
             };
-
         }
     }
 }

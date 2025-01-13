@@ -1,6 +1,5 @@
 ﻿using LeadTrackApi.Domain.DTOs;
 using LeadTrackApi.Domain.Entities;
-using LeadTrackApi.Domain.Enums;
 using LeadTrackApi.Domain.Models.Response;
 using LeadTrackApi.Persistence.Models;
 using Mapster;
@@ -13,10 +12,13 @@ namespace LeadTrackApi.Services
     {
         private readonly IMongoCollection<User> _userCollection;
         private readonly IMongoCollection<Prospect> _prospectCollection;
-        private readonly IMongoCollection<Interacctions> _interactionsCollection;
+        private readonly IMongoCollection<Interactions> _interactionsCollection;
         private readonly IMongoCollection<Industry> _industryCollection;
         private readonly IMongoCollection<Role> _roleCollection;
         private readonly IMongoCollection<Company> _companyCollection;
+        private readonly List<Role> _roles;
+        private readonly List<Industry> _industries;
+        private readonly List<User> _users;
 
         public MongoDBService(IOptions<MongoDBSettings> mongoDBSettings)
         {
@@ -24,11 +26,17 @@ namespace LeadTrackApi.Services
             IMongoDatabase database = client.GetDatabase(mongoDBSettings.Value.DatabaseName);
 
             _userCollection = database.GetCollection<User>("Users");
-            _prospectCollection = database.GetCollection<Prospect>("Prospects");
-            _interactionsCollection = database.GetCollection<Interacctions>("Interactions");
-            _industryCollection = database.GetCollection<Industry>("Industries");
             _roleCollection = database.GetCollection<Role>("Roles");
             _companyCollection = database.GetCollection<Company>("Companies");
+            _industryCollection = database.GetCollection<Industry>("Industries");
+            _prospectCollection = database.GetCollection<Prospect>("Prospects");
+            _interactionsCollection = database.GetCollection<Interactions>("Interactions");
+
+
+            //Para mantener en cache
+            _roles = _roleCollection.Find(_ => true).ToList();
+            _industries = _industryCollection.Find(_ => true).ToList();
+            _users = _userCollection.Find(_ => true).ToList();
 
         }
 
@@ -45,7 +53,12 @@ namespace LeadTrackApi.Services
         {
             var filter = Builders<User>.Filter.Eq(u => u.Email, email) & Builders<User>.Filter.Eq(u => u.Password, password);
             var resp = await _userCollection.Find(filter).FirstOrDefaultAsync();
-            return resp?.Adapt<UserDto>();
+
+            var adapt = resp.Adapt<UserDto>();
+            adapt.Role = _roles.FirstOrDefault(r => r.Id == resp.IdRole).Name;
+            adapt.UserId = resp.Id;
+
+            return adapt;
         }
 
         public async Task<Prospect> AddProspect(Prospect p)
@@ -54,126 +67,47 @@ namespace LeadTrackApi.Services
             return p;
         }
 
-        public async Task<Interacctions> AddInteraction(Interacctions p)
+        public async Task<Interactions> AddInteraction(Interactions p)
         {
             await _interactionsCollection.InsertOneAsync(p);
             return p;
         }
 
-        public async Task<List<Prospect>> GetProspects()
+        public async Task<List<ProspectDTO>> GetProspects()
         {
-            return await _prospectCollection.Find(_ => true).ToListAsync();
+            var prospectDTOs = new List<ProspectDTO>();
+            var prospects = await _prospectCollection.Find(_ => true).ToListAsync();
+
+            foreach (var p in prospects)
+            {
+                var prospectDTO = p.Adapt<ProspectDTO>();
+                var company = await _companyCollection.Find(i => i.Id == p.IdCompany).FirstOrDefaultAsync();
+                var industry = _industries.FirstOrDefault(i => i.Id == company.IdIndustry);
+                prospectDTO.Company = company.Adapt<CompanyDTO>();
+                industry.Adapt(prospectDTO.Company);
+                prospectDTOs.Add(prospectDTO);
+            };
+            return prospectDTOs;
         }
 
-        public async Task<List<Interacctions>> GetInteractions()
+        public async Task<List<InteractionDTO>> GetInteractionsByProspect(string idProspect)
         {
-            return await _interactionsCollection.Find(_ => true).ToListAsync();
+            var interactions = new List<InteractionDTO>();
+            var resp = await _interactionsCollection.Find(e => e.ProspectId == idProspect).ToListAsync();
+            foreach (var i in resp)
+            {
+                var iDto = i.Adapt<InteractionDTO>();
+                iDto.UserName = _users.FirstOrDefault(u => u.Id == i.UserId).UserName;
+                interactions.Add(iDto);
+            }
+
+            return interactions;
         }
 
-        public async Task<List<Industry>> GetIndustries()
+        public async Task<Interactions> GetInteractionById(string id)
         {
-            return await _industryCollection.Find(_ => true).ToListAsync();
-        }
-
-        public async Task<List<Role>> GetRoles()
-        {
-            return await _roleCollection.Find(_ => true).ToListAsync();
-        }
-
-        public async Task<Prospect> GetProspectById(string id)
-        {
-            var filter = Builders<Prospect>.Filter.Eq(p => p.Id, id);
-            return await _prospectCollection.Find(filter).FirstOrDefaultAsync();
-        }
-
-        public async Task<Industry> GetIndustryById(string id)
-        {
-            var filter = Builders<Industry>.Filter.Eq(p => p.Id, id);
-            return await _industryCollection.Find(filter).FirstOrDefaultAsync();
-        }
-
-        public async Task<Role> GetRoleById(string id)
-        {
-            var filter = Builders<Role>.Filter.Eq(p => p.Id, id);
-            return await _roleCollection.Find(filter).FirstOrDefaultAsync();
-        }
-
-        public async Task<Interacctions> GetInteractionById(string id)
-        {
-            var filter = Builders<Interacctions>.Filter.Eq(p => p.Id, id);
+            var filter = Builders<Interactions>.Filter.Eq(p => p.Id, id);
             return await _interactionsCollection.Find(filter).FirstOrDefaultAsync();
-        }
-
-        public async Task<Prospect> UpdateProspect(Prospect p)
-        {
-            var filter = Builders<Prospect>.Filter.Eq(p => p.Id, p.Id);
-            await _prospectCollection.ReplaceOneAsync(filter, p);
-            return p;
-        }
-
-        public async Task<Interacctions> UpdateInteraction(Interacctions p)
-        {
-            var filter = Builders<Interacctions>.Filter.Eq(p => p.Id, p.Id);
-            await _interactionsCollection.ReplaceOneAsync(filter, p);
-            return p;
-        }
-
-        public async Task<Industry> UpdateIndustry(Industry p)
-        {
-            var filter = Builders<Industry>.Filter.Eq(p => p.Id, p.Id);
-            await _industryCollection.ReplaceOneAsync(filter, p);
-            return p;
-        }
-
-        public async Task<Role> UpdateRole(Role p)
-        {
-            var filter = Builders<Role>.Filter.Eq(p => p.Id, p.Id);
-            await _roleCollection.ReplaceOneAsync(filter, p);
-            return p;
-        }
-
-        public async Task DeleteProspect(string id)
-        {
-            var filter = Builders<Prospect>.Filter.Eq(p => p.Id, id);
-            await _prospectCollection.DeleteOneAsync(filter);
-        }
-
-        public async Task DeleteInteraction(string id)
-        {
-            var filter = Builders<Interacctions>.Filter.Eq(p => p.Id, id);
-            await _interactionsCollection.DeleteOneAsync(filter);
-        }
-
-        public async Task DeleteIndustry(string id)
-        {
-            var filter = Builders<Industry>.Filter.Eq(p => p.Id, id);
-            await _industryCollection.DeleteOneAsync(filter);
-        }
-
-        public async Task DeleteRole(string id)
-        {
-            var filter = Builders<Role>.Filter.Eq(p => p.Id, id);
-            await _roleCollection.DeleteOneAsync(filter);
-        }
-
-        public async Task<UserDto> GetUserById(string id)
-        {
-            var filter = Builders<User>.Filter.Eq(p => p.Id, id);
-            var resp = await _userCollection.Find(filter).FirstOrDefaultAsync();
-            return resp?.Adapt<UserDto>();
-        }
-
-        public async Task DeleteUser(string id)
-        {
-            var filter = Builders<User>.Filter.Eq(p => p.Id, id);
-            await _userCollection.DeleteOneAsync(filter);
-        }
-
-        public async Task<UserDto> GetUserByEmail(string email)
-        {
-            var filter = Builders<User>.Filter.Eq(p => p.Email, email);
-            var resp = await _userCollection.Find(filter).FirstOrDefaultAsync();
-            return resp?.Adapt<UserDto>();
         }
 
         public async Task<Role> AddRole(Role r)

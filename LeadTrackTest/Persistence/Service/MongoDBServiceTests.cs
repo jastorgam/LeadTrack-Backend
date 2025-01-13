@@ -11,6 +11,7 @@ using Xunit.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using LeadTrack.API.Application.Extensions;
 using LeadTrackApi.Domain.Enums;
+using LeadTrackApi.Application.Utils;
 
 namespace LeadTrackApi.Services.Tests
 {
@@ -96,7 +97,7 @@ namespace LeadTrackApi.Services.Tests
         public async Task AddUserTest()
         {
             var email = "admin@leadtrack.cl";
-            var password = "123456";
+            var password = SecurityUtils.HashPassword("123456");
             var name = "Admin";
             var idRole = "677db6caa30aeee7cb519c28";
 
@@ -108,7 +109,7 @@ namespace LeadTrackApi.Services.Tests
         [Fact()]
         public async Task AddInteraction()
         {
-            var interaction = new Interacctions
+            var interaction = new Interactions
             {
                 ProspectId = "677db948bc09b835dee770a6",
                 UserId = "677db8ec3620384ebc2a3f50",
@@ -118,6 +119,14 @@ namespace LeadTrackApi.Services.Tests
             var result = await _mongoDBService.AddInteraction(interaction);
             _console.WriteLine(result.Dump());
             Assert.True(result.ProspectId == interaction.ProspectId);
+        }
+
+        [Fact()]
+        public async Task GetProspectsTest()
+        {
+            var resp = await _mongoDBService.GetProspects();
+            _console.WriteLine(resp.Dump());
+            Assert.NotEmpty(resp);
         }
     }
 }
