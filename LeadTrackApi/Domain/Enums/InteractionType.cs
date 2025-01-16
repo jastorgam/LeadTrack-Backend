@@ -1,12 +1,11 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace LeadTrackApi.Domain.Enums
+namespace LeadTrackApi.Domain.Enums;
+
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum InteractionType
 {
-    [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum InteractionType
-    {
-        Call,
-        Email,
-        Meeting
-    }
+    Call,
+    Email,
+    Meeting
 }

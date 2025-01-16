@@ -1,11 +1,10 @@
 ﻿using System;
 
-namespace LeadTrack.API.Domain.Exceptions
+namespace LeadTrackApi.Domain.Exceptions;
+
+public class BussinesException : Exception
 {
-    public class BussinesException : Exception
-    {
-        public BussinesException() { }
-        public BussinesException(string message) : base(message) { }
-        public BussinesException(string message, Exception inner) : base(message, inner) { }
-    }
+    public BussinesException() { }
+    public BussinesException(string message) : base(message) { }
+    public BussinesException(string message, Exception inner) : base(message, inner) { }
 }

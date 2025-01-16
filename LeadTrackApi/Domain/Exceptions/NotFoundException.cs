@@ -1,11 +1,10 @@
 ﻿using System;
 
-namespace LeadTrack.API.Domain.Exceptions
+namespace LeadTrackApi.Domain.Exceptions;
+
+public class NotFoundException : Exception
 {
-    public class NotFoundException : Exception
-    {
-        public NotFoundException() { }
-        public NotFoundException(string message) : base(message) { }
-        public NotFoundException(string message, Exception inner) : base(message, inner) { }
-    }
+    public NotFoundException() { }
+    public NotFoundException(string message) : base(message) { }
+    public NotFoundException(string message, Exception inner) : base(message, inner) { }
 }

@@ -4,18 +4,17 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 
-namespace LeadTrack.API.Application.Extensions
+namespace LeadTrackApi.Application.Extensions;
+
+public static class ExceptionExtension
 {
-    public static class ExceptionExtension
+    public static ErrorResponse ToError(this Exception ex, string message = null)
     {
-        public static ErrorResponse ToError(this Exception ex, string message = null)
+        return new ErrorResponse
         {
-            return new ErrorResponse
-            {
-                Error = message ?? ex.Message,
-                Stack = ex.StackTrace,
-                Inner = ex.InnerException?.StackTrace
-            };
-        }
+            Error = message ?? ex.Message,
+            Stack = ex.StackTrace,
+            Inner = ex.InnerException?.StackTrace
+        };
     }
 }

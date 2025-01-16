@@ -1,17 +1,16 @@
 ﻿
 using LeadTrackApi.Persistence.Models;
-using LeadTrackApi.Services;
+using LeadTrackApi.Persistence.Service;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace LeadTrack.API.Bootstrapper
+namespace LeadTrack.API.Bootstrapper;
+
+public static class PersistenceExtension
 {
-    public static class PersistenceExtension
+    public static IServiceCollection RegisterRepositoryExtension(this IServiceCollection services, IConfiguration configuration)
     {
-        public static IServiceCollection RegisterRepositoryExtension(this IServiceCollection services, IConfiguration configuration)
-        {
-            services.Configure<MongoDBSettings>(configuration.GetSection("MongoDB"));
-            services.AddSingleton<MongoDBService>();
-            return services;
-        }
+        services.Configure<MongoDBSettings>(configuration.GetSection("MongoDB"));
+        services.AddSingleton<MongoDBService>();
+        return services;
     }
 }

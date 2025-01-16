@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 using LeadTrack.API.Test;
 using Xunit.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
-using LeadTrack.API.Application.Extensions;
 using LeadTrackApi.Application.Interfaces;
+using LeadTrackApi.Application.Extensions;
 
 namespace LeadTrackApi.Application.Business.Tests
 {

@@ -1,14 +1,12 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace LeadTrackApi.Domain.Enums
+namespace LeadTrackApi.Domain.Enums;
+
+
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum EmailType
 {
-
-    [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum EmailType
-    {
-        Personal,
-        Work,
-        Other
-    }
-
+    Personal,
+    Work,
+    Other
 }

@@ -1,12 +1,11 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace LeadTrackApi.Domain.Enums
+namespace LeadTrackApi.Domain.Enums;
+
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum PhoneType
 {
-    [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum PhoneType
-    {
-        Personal,
-        Work,
-        Other
-    }
+    Personal,
+    Work,
+    Other
 }

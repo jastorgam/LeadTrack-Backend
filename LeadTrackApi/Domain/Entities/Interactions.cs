@@ -3,20 +3,19 @@ using MongoDB.Bson;
 using LeadTrackApi.Domain.Enums;
 using System.Text.Json.Serialization;
 
-namespace LeadTrackApi.Domain.Entities
+namespace LeadTrackApi.Domain.Entities;
+
+public class Interactions
 {
-    public class Interactions
-    {
-        [BsonId]
-        [BsonRepresentation(BsonType.ObjectId)]
-        public string Id { get; set; }
-        public string ProspectId { get; set; }
-        public string UserId { get; set; }
-        public string Type { get; set; }
-        public string Notes { get; set; }
-        public bool Answer { get; set; }
-        public DateTime Date { get; set; } = DateTime.UtcNow;
+    [BsonId]
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string Id { get; set; }
+    public string ProspectId { get; set; }
+    public string UserId { get; set; }
+    public string Type { get; set; }
+    public string Notes { get; set; }
+    public bool Answer { get; set; }
+    public DateTime Date { get; set; } = DateTime.UtcNow;
 
 
-    }
 }

@@ -1,15 +1,10 @@
 ﻿using Newtonsoft.Json;
 using System;
 
-namespace LeadTrack.API.Application.Extensions
+namespace LeadTrackApi.Application.Extensions;
+
+public static class ObjectHelper
 {
-    public static class ObjectHelper
-    {
-        public static string Dump<T>(this T obj)
-        {
-            string json = JsonConvert.SerializeObject(obj, Formatting.Indented);
-            Console.WriteLine(json);
-            return json;
-        }
-    }
+    public static string Dump<T>(this T obj, bool indented = true) =>
+        JsonConvert.SerializeObject(obj, indented ? Formatting.Indented : Formatting.None);
 }

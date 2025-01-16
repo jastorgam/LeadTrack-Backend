@@ -1,10 +1,9 @@
 ﻿using LeadTrackApi.Domain.Enums;
 
-namespace LeadTrackApi.Domain.Entities
+namespace LeadTrackApi.Domain.Entities;
+
+public class SocialNetwork
 {
-    public class SocialNetwork
-    {
-        public string Type { get; set; }
-        public string Url { get; set; }
-    }
+    public string Type { get; set; }
+    public string Url { get; set; }
 }

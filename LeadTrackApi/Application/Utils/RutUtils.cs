@@ -1,62 +1,60 @@
-﻿using LeadTrack.API.Domain.Exceptions;
-using System;
+﻿using LeadTrackApi.Domain.Exceptions;
 using System.Text.RegularExpressions;
 
-namespace LeadTrack.API.Application.Utils
+namespace LeadTrack.API.Application.Utils;
+
+public static class RutUtils
 {
-    public static class RutUtils
+
+    /// <summary>
+    /// Limpia y separa el rut y dv, no Valida el rut
+    /// </summary>
+    /// <param name="rutWithDv">Rut con digito verificador</param>
+    /// <returns>rut integer</returns>
+    /// <exception cref="ArgumentNullException"></exception>
+    public static (int rut, string dv) GetRut(string rutWithDv)
     {
-
-        /// <summary>
-        /// Limpia y separa el rut y dv, no Valida el rut
-        /// </summary>
-        /// <param name="rutWithDv">Rut con digito verificador</param>
-        /// <returns>rut integer</returns>
-        /// <exception cref="ArgumentNullException"></exception>
-        public static (int rut, string dv) GetRut(string rutWithDv)
+        try
         {
-            try
-            {
-                string rutClean = CleanRut(rutWithDv);
-                var rut = rutClean[0..^1];
-                return (Convert.ToInt32(rut), rutClean[^1..]);
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidRutException(rutWithDv, ex);
-            }
+            string rutClean = CleanRut(rutWithDv);
+            var rut = rutClean[0..^1];
+            return (Convert.ToInt32(rut), rutClean[^1..]);
         }
-
-        private static string CleanRut(string rutWithDv)
+        catch (Exception ex)
         {
-            string expression = "\\.|-|_| ";
-            rutWithDv = rutWithDv ?? throw new ArgumentNullException(nameof(rutWithDv));
-            var rutClean = Regex.Replace(rutWithDv.ToUpper(), expression, "");
-            return rutClean;
+            throw new InvalidRutException(rutWithDv, ex);
         }
+    }
 
-        public static string FormatRutWithOutDots(string rutWithDv)
+    private static string CleanRut(string rutWithDv)
+    {
+        string expression = "\\.|-|_| ";
+        rutWithDv = rutWithDv ?? throw new ArgumentNullException(nameof(rutWithDv));
+        var rutClean = Regex.Replace(rutWithDv.ToUpper(), expression, "");
+        return rutClean;
+    }
+
+    public static string FormatRutWithOutDots(string rutWithDv)
+    {
+        var (rut, dv) = GetRut(rutWithDv);
+        return $"{rut}-{dv}";
+    }
+
+    public static bool IsValidRut(string rutWithDv)
+    {
+        try
         {
             var (rut, dv) = GetRut(rutWithDv);
-            return $"{rut}-{dv}";
-        }
 
-        public static bool IsValidRut(string rutWithDv)
+            int s = 1;
+            for (int m = 0; rut != 0; rut /= 10) s = (s + rut % 10 * (9 - m++ % 6)) % 11;
+
+            return dv[0] == (char)(s != 0 ? s + 47 : 75);
+        }
+        catch (Exception)
         {
-            try
-            {
-                var (rut, dv) = GetRut(rutWithDv);
-
-                int s = 1;
-                for (int m = 0; rut != 0; rut /= 10) s = (s + rut % 10 * (9 - m++ % 6)) % 11;
-
-                return dv[0] == (char)(s != 0 ? s + 47 : 75);
-            }
-            catch (Exception)
-            {
-                return false;
-            }
+            return false;
         }
-
     }
+
 }

@@ -1,14 +1,13 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace LeadTrackApi.Domain.Enums
+namespace LeadTrackApi.Domain.Enums;
+
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum SocialNetworkType
 {
-    [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum SocialNetworkType
-    {
-        Facebook,
-        Twitter,
-        Instagram,
-        LinkedIn,
-        Google
-    }
+    Facebook,
+    Twitter,
+    Instagram,
+    LinkedIn,
+    Google
 }

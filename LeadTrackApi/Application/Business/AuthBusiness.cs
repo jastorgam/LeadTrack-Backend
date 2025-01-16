@@ -2,7 +2,7 @@
 using LeadTrackApi.Application.Services;
 using LeadTrackApi.Application.Utils;
 using LeadTrackApi.Domain.Models.Response;
-using LeadTrackApi.Services;
+using LeadTrackApi.Persistence.Service;
 
 namespace LeadTrackApi.Application.Business
 {

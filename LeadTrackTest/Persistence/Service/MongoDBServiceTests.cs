@@ -1,5 +1,4 @@
 ﻿using Xunit;
-using LeadTrackApi.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,9 +8,10 @@ using LeadTrackApi.Domain.Entities;
 using LeadTrack.API.Test;
 using Xunit.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
-using LeadTrack.API.Application.Extensions;
 using LeadTrackApi.Domain.Enums;
 using LeadTrackApi.Application.Utils;
+using LeadTrackApi.Persistence.Service;
+using LeadTrackApi.Application.Extensions;
 
 namespace LeadTrackApi.Services.Tests
 {
