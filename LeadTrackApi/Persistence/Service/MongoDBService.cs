@@ -54,6 +54,8 @@ public class MongoDBService
         var filter = Builders<User>.Filter.Eq(u => u.Email, email) & Builders<User>.Filter.Eq(u => u.Password, password);
         var resp = await _userCollection.Find(filter).FirstOrDefaultAsync();
 
+        if (resp == null) await Task.FromException<UserDto>(new Exception("User not found"));
+
         var adapt = resp.Adapt<UserDto>();
         adapt.Role = _roles.FirstOrDefault(r => r.Id == resp.IdRole).Name;
         adapt.UserId = resp.Id;

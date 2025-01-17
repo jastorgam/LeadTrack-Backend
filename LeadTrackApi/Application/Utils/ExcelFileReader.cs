@@ -2,6 +2,7 @@
 using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
+using System.IO;
 
 
 namespace LeadTrackApi.Application.Utils;
@@ -10,14 +11,28 @@ public class ExcelFileReader(FileSchema fileSchema)
 {
     private List<FieldSchema> _fields = fileSchema.BodyFields;
 
-    public IEnumerable<Dictionary<string, object>> ReadFile(string filePath)
+    public IEnumerable<Dictionary<string, object>> ReadFile(Stream fileStream)
     {
         IWorkbook workbook;
-        using (var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+
+        if (fileStream.CanSeek)
         {
-            if (filePath.EndsWith(".xlsx")) workbook = new XSSFWorkbook(fileStream);
-            else if (filePath.EndsWith(".xls")) workbook = new HSSFWorkbook(fileStream);
-            else throw new ArgumentException("Formato de archivo no soportado. Solo se admiten .xls y .xlsx.");
+            var buffer = new byte[4];
+            fileStream.Read(buffer, 0, 4);
+            fileStream.Seek(0, SeekOrigin.Begin);
+
+            if (buffer[0] == 0x50 && buffer[1] == 0x4B && buffer[2] == 0x03 && buffer[3] == 0x04)
+            {
+                workbook = new XSSFWorkbook(fileStream); // XLSX
+            }
+            else
+            {
+                workbook = new HSSFWorkbook(fileStream); // XLS
+            }
+        }
+        else
+        {
+            throw new ArgumentException("No se puede determinar el formato del archivo porque el Stream no admite operaciones de búsqueda.");
         }
 
         var worksheet = workbook.GetSheetAt(0);

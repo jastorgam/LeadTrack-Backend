@@ -8,7 +8,7 @@ namespace LeadTrackApi.Application.Utils.Tests;
 public class ExcelFileReaderTests(TestConfiguration testConfiguration, ITestOutputHelper console) : IClassFixture<TestConfiguration>
 {
     [Fact()]
-    public void ReadFileTest()
+    public void ReadFileExcelTest()
     {
         var schema = new FileSchema()
         {
@@ -30,7 +30,9 @@ public class ExcelFileReaderTests(TestConfiguration testConfiguration, ITestOutp
 
         var filename = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "BaseClientesEmpresas pequeñas.xlsx");
         var reader = new ExcelFileReader(schema);
-        var body = reader.ReadFile(filename);
+
+        using var fileStream = new FileStream(filename, FileMode.Open, FileAccess.Read);
+        var body = reader.ReadFile(fileStream);
 
         foreach (var item in body)
         {
