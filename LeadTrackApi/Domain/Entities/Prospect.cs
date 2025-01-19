@@ -16,4 +16,5 @@ public class Prospect
     public List<Email> Emails { get; set; }
     public List<SocialNetwork> SocialNetworks { get; set; }
     public string IdCompany { get; set; }
+    public bool Status { get; set; }
 }

@@ -90,7 +90,7 @@ namespace LeadTrackApi.Application.Business
                         Address = item["address"].ToString(),
                         Size = item["size"].ToString(),
                         Domain = item["domain"].ToString(),
-                        IdIndustry = ObjectId.Parse(item["industry"].ToString())
+                        IdIndustry = item["industry"].ToString()
                     };
 
                     company = await _mongoService.AddCompany(company);

@@ -15,4 +15,6 @@ public class ProspectDTO
     public List<Email> Emails { get; set; }
     public List<SocialNetwork> SocialNetworks { get; set; }
     public CompanyDTO Company { get; set; }
+    public InteractionDTO LastInteraction { get; set; }
+    public bool Status { get; set; }
 }

@@ -3,6 +3,7 @@ using LeadTrackApi.Domain.Entities;
 using LeadTrackApi.Domain.Models.Response;
 using LeadTrackApi.Persistence.Models;
 using Mapster;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
@@ -65,8 +66,22 @@ public class MongoDBService
 
     public async Task<Prospect> AddProspect(Prospect p)
     {
-        await _prospectCollection.InsertOneAsync(p);
-        return p;
+        try
+        {
+            var filter = Builders<Prospect>.Filter.Eq(prospect => prospect.Name, p.Name) &
+                         Builders<Prospect>.Filter.Eq(prospect => prospect.LastName, p.LastName) &
+                         Builders<Prospect>.Filter.ElemMatch(prospect => prospect.Emails, email => email.Address == p.Emails.FirstOrDefault().Address);
+
+            var existingProspect = await _prospectCollection.Find(filter).FirstOrDefaultAsync();
+            if (existingProspect != null) return existingProspect;
+
+            await _prospectCollection.InsertOneAsync(p);
+            return p;
+        }
+        catch (Exception ex)
+        {
+            throw;
+        }
     }
 
     public async Task<Interactions> AddInteraction(Interactions p)
@@ -75,10 +90,14 @@ public class MongoDBService
         return p;
     }
 
-    public async Task<List<ProspectDTO>> GetProspects()
+    public async Task<List<ProspectDTO>> GetProspects(int page = 1, int pageSize = 10)
     {
         var prospectDTOs = new List<ProspectDTO>();
-        var prospects = await _prospectCollection.Find(_ => true).ToListAsync();
+        var skip = (page - 1) * pageSize;
+        var prospects = await _prospectCollection.Find(_ => true)
+                                                 .Skip(skip)
+                                                 .Limit(pageSize)
+                                                 .ToListAsync();
 
         foreach (var p in prospects)
         {
@@ -89,7 +108,10 @@ public class MongoDBService
             industry.Adapt(prospectDTO.Company);
             prospectDTOs.Add(prospectDTO);
         };
+
+
         return prospectDTOs;
+
     }
 
     public async Task<List<InteractionDTO>> GetInteractionsByProspect(string idProspect)
@@ -120,13 +142,36 @@ public class MongoDBService
 
     public async Task<Industry> AddIndustry(Industry r)
     {
+        var existingIndustry = await _industryCollection.Find(i => i.Type == r.Type).FirstOrDefaultAsync();
+        if (existingIndustry != null) return existingIndustry;
+
         await _industryCollection.InsertOneAsync(r);
         return r;
     }
 
     public async Task<Company> AddCompany(Company company)
     {
+        var existingCompany = await _companyCollection.Find(c => c.Name == company.Name).FirstOrDefaultAsync();
+        if (existingCompany != null) return existingCompany;
+
         await _companyCollection.InsertOneAsync(company);
         return company;
+    }
+
+    public async Task<InteractionDTO> GetLastInteractionsByProspectId(string id)
+    {
+        var filter = Builders<Interactions>.Filter.Eq(p => p.ProspectId, id);
+        var sort = Builders<Interactions>.Sort.Descending(p => p.Date);
+        var resp = await _interactionsCollection.Find(filter).Sort(sort).FirstOrDefaultAsync();
+
+        if (resp == null) return null;
+        var inte = resp.Adapt<InteractionDTO>();
+        inte.UserName = _users.FirstOrDefault(u => u.Id == resp.UserId).UserName;
+        return inte.Adapt<InteractionDTO>();
+    }
+
+    public async Task<long> GetTotalProspectsCount()
+    {
+        return await _prospectCollection.CountDocumentsAsync(_ => true);
     }
 }
