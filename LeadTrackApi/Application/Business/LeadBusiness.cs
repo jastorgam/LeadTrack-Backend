@@ -3,8 +3,11 @@ using LeadTrackApi.Application.Interfaces;
 using LeadTrackApi.Application.Utils;
 using LeadTrackApi.Domain.DTOs;
 using LeadTrackApi.Domain.Entities;
+using LeadTrackApi.Domain.Enums;
 using LeadTrackApi.Domain.Models;
 using LeadTrackApi.Persistence.Service;
+using Microsoft.AspNetCore.Mvc;
+using MongoDB.Bson;
 
 namespace LeadTrackApi.Application.Business
 {
@@ -18,9 +21,15 @@ namespace LeadTrackApi.Application.Business
             return await _mongoService.AddUser(email, pass, name, idRole);
         }
 
-        public async Task<List<ProspectDTO>> GetProspects()
+        public async Task<List<ProspectDTO>> GetProspects(int page = 1, int pageSize = 10)
         {
-            return await _mongoService.GetProspects();
+            var resp = await _mongoService.GetProspects(page, pageSize);
+            foreach (var item in resp)
+            {
+                var interaction = await _mongoService.GetLastInteractionsByProspectId(item.Id.ToString());
+                item.LastInteraction = interaction;
+            }
+            return resp;
         }
 
         public async Task<List<InteractionDTO>> GetInteractions(string idProspect)
@@ -35,12 +44,12 @@ namespace LeadTrackApi.Application.Business
                 Type = "excel",
                 BodyFields =
                  [
-                    new () { Name = "nombre", Type = "string" },
-                    new () { Name = "apellido", Type = "string" },
+                    new () { Name = "name", Type = "string" },
+                    new () { Name = "last_name", Type = "string" },
                     new () { Name = "email", Type = "string" },
-                    new () { Name = "cargo", Type = "string" },
-                    new () { Name = "industria", Type = "string" },
-                    new () { Name = "nombre_company", Type = "string" },
+                    new () { Name = "job_title", Type = "string" },
+                    new () { Name = "industry", Type = "string" },
+                    new () { Name = "name_company", Type = "string" },
                     new () { Name = "address", Type = "string" },
                     new () { Name = "size", Type = "string" },
                     new () { Name = "domain", Type = "string" },
@@ -48,12 +57,72 @@ namespace LeadTrackApi.Application.Business
                 ]
             };
 
+            try
+            {
+                var reader = new ExcelFileReader(schema);
+                var resp = reader.ReadFile(stream);
+                var ret = resp.ToList();
 
-            var reader = new ExcelFileReader(schema);
-            var resp = reader.ReadFile(stream);
-            var ret = resp.ToList();
-            ret.ForEach(item => logger.LogInformation(item.Dump(false)));
-            return ret;
+                var remover = new List<Dictionary<string, object>>();
+
+                foreach (var item in ret)
+                {
+                    if (string.IsNullOrEmpty(item["name"].ToString()) && string.IsNullOrEmpty(item["name"].ToString()))
+                    {
+                        remover.Add(item);
+                        continue;
+                    }
+
+
+                    logger.LogInformation(item.Dump(false));
+
+                    var industry = new Industry()
+                    {
+                        Type = item["industry"].ToString(),
+                        Description = item["industry"].ToString()
+                    };
+
+                    industry = await _mongoService.AddIndustry(industry);
+
+                    var company = new Company()
+                    {
+                        Name = item["name_company"].ToString(),
+                        Address = item["address"].ToString(),
+                        Size = item["size"].ToString(),
+                        Domain = item["domain"].ToString(),
+                        IdIndustry = ObjectId.Parse(item["industry"].ToString())
+                    };
+
+                    company = await _mongoService.AddCompany(company);
+
+                    var prospects = new Prospect()
+                    {
+                        Name = item["name"].ToString(),
+                        LastName = item["last_name"].ToString(),
+                        Emails = [new Email() { Address = item["email"].ToString(), Type = EmailType.Personal.ToString(), Valid = true }],
+                        Position = item["job_title"].ToString(),
+                        IdCompany = company.Id,
+                        SocialNetworks = [new SocialNetwork() { Url = item["linkedin"].ToString(), Type = SocialNetworkType.LinkedIn.ToString() }]
+                    };
+
+                    await _mongoService.AddProspect(prospects);
+                };
+
+                remover.ForEach(e => ret.Remove(e));
+
+                return ret;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error en el proceso de lectura", ex);
+            }
+
+
+        }
+
+        public async Task<long> GetProspectsCount()
+        {
+            return await _mongoService.GetTotalProspectsCount();
         }
     }
 }

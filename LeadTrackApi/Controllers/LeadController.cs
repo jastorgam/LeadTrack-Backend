@@ -50,9 +50,17 @@ public class LeadController(ILeadBusiness leadBusiness, ILogger<LeadController> 
 
     [HttpGet]
     [Route("get-prospects")]
-    public async Task<IActionResult> GetProspects()
+    public async Task<IActionResult> GetProspects([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
-        var resp = await _business.GetProspects();
+        var resp = await _business.GetProspects(page, pageSize);
+        return Ok(resp);
+    }
+
+    [HttpGet]
+    [Route("get-prospects/count")]
+    public async Task<IActionResult> GetProspectsCount([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    {
+        var resp = await _business.GetProspectsCount();
         return Ok(resp);
     }
 
