@@ -109,10 +109,10 @@ namespace LeadTrackApi.Services.Tests
         [Fact()]
         public async Task AddInteraction()
         {
-            var interaction = new Interactions
+            var interaction = new Domain.DTOs.InteractionDTO
             {
                 ProspectId = "677db948bc09b835dee770a6",
-                UserId = "677db8ec3620384ebc2a3f50",
+                UserName = "Admin",
                 Type = InteractionType.Call.ToString(),
                 Notes = "Test call"
             };

@@ -1,5 +1,6 @@
 ﻿using LeadTrackApi.Application.Extensions;
 using LeadTrackApi.Application.Interfaces;
+using LeadTrackApi.Domain.DTOs;
 using LeadTrackApi.Domain.Enums;
 using LeadTrackApi.Domain.Models.Request;
 using Microsoft.AspNetCore.Http;
@@ -18,8 +19,17 @@ public class LeadController(ILeadBusiness leadBusiness, ILogger<LeadController> 
     [Route("add-user")]
     public async Task<IActionResult> AddUser([FromBody] AddUserRequest ur)
     {
-        var resp = await _business.AddUser(ur.Email, ur.Password, ur.UserName, ur.idRole);
-        return Ok(resp);
+        try
+        {
+            var resp = await _business.AddUser(ur.Email, ur.Password, ur.UserName, ur.idRole);
+            return Ok(resp);
+        }
+        catch (Exception ex)
+        {
+            var msj = "Error al agregar usuario";
+            _logger.LogError(ex, msj);
+            return BadRequest(ex.ToError(msj));
+        }
     }
 
     [HttpPost]
@@ -41,34 +51,81 @@ public class LeadController(ILeadBusiness leadBusiness, ILogger<LeadController> 
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error al procesar el archivo.");
-            return BadRequest(ex.ToError("Ocurrió un error al procesar el archivo."));
+            var msj = "Error al procesar archivo";
+            _logger.LogError(ex, msj);
+            return BadRequest(ex.ToError(msj));
         }
     }
 
 
 
     [HttpGet]
-    [Route("get-prospects")]
+    [Route("prospects")]
     public async Task<IActionResult> GetProspects([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
-        var resp = await _business.GetProspects(page, pageSize);
-        return Ok(resp);
+        try
+        {
+            var resp = await _business.GetProspects(page, pageSize);
+            return Ok(resp);
+        }
+        catch (Exception ex)
+        {
+            var msj = "Error al rescatar prospectos";
+            _logger.LogError(ex, msj);
+            return BadRequest(ex.ToError(msj));
+        }
     }
 
     [HttpGet]
-    [Route("get-prospects/count")]
+    [Route("prospects/count")]
     public async Task<IActionResult> GetProspectsCount([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
-        var resp = await _business.GetProspectsCount();
-        return Ok(resp);
+        try
+        {
+            var resp = await _business.GetProspectsCount();
+            return Ok(resp);
+        }
+        catch (Exception ex)
+        {
+            var msj = "Error al contar prospectos";
+            _logger.LogError(ex, msj);
+            return BadRequest(ex.ToError(msj));
+        }
     }
 
     [HttpGet]
-    [Route("get-interactions/{idProspect}")]
+    [Route("interaction/get/{idProspect}")]
     public async Task<IActionResult> GetInteractions(string idProspect)
     {
-        var resp = await _business.GetInteractions(idProspect);
-        return Ok(resp);
+        try
+        {
+            var resp = await _business.GetInteractions(idProspect);
+            return Ok(resp);
+        }
+        catch (Exception ex)
+        {
+            var msj = "Error al rescatar interacciones";
+            _logger.LogError(ex, msj);
+            return BadRequest(ex.ToError(msj));
+        }
+    }
+
+
+    [HttpPost]
+    [Route("interaction/save")]
+    public async Task<IActionResult> SaveInteraction([FromBody] InteractionDTO interaction)
+    {
+        try
+        {
+            await _business.SaveInteraction(interaction);
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            var msj = "Error al guardar la interacción.";
+            _logger.LogError(ex, msj);
+            return BadRequest(ex.ToError(msj));
+        }
+
     }
 }

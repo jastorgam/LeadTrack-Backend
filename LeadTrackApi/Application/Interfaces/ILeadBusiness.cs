@@ -10,4 +10,5 @@ public interface ILeadBusiness
     public Task<long> GetProspectsCount();
     public Task<List<InteractionDTO>> GetInteractions(string idProspect);
     public Task<List<Dictionary<string, object>>> ProcessFile(Stream stream);
+    public Task SaveInteraction(InteractionDTO interaction);
 }

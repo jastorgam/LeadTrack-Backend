@@ -1,10 +1,12 @@
-﻿using LeadTrackApi.Domain.DTOs;
+﻿using ICSharpCode.SharpZipLib.Core;
+using LeadTrackApi.Domain.DTOs;
 using LeadTrackApi.Domain.Entities;
 using LeadTrackApi.Domain.Models.Response;
 using LeadTrackApi.Persistence.Models;
 using Mapster;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace LeadTrackApi.Persistence.Service;
@@ -84,19 +86,28 @@ public class MongoDBService
         }
     }
 
-    public async Task<Interactions> AddInteraction(Interactions p)
+    public async Task<Interactions> AddInteraction(InteractionDTO p)
     {
-        await _interactionsCollection.InsertOneAsync(p);
-        return p;
+        var interaction = p.Adapt<Interactions>();
+        interaction.UserId = _users.Find(u => u.UserName == p.UserName).Id;
+        await _interactionsCollection.InsertOneAsync(interaction);
+        return interaction;
     }
 
     public async Task<List<ProspectDTO>> GetProspects(int page = 1, int pageSize = 10)
     {
         var prospectDTOs = new List<ProspectDTO>();
         var skip = (page - 1) * pageSize;
+
+
+        //var filters = Builders<Prospect>.Filter.Empty;
+        //filters &= Builders<Prospect>.Filter.Regex("Name", new BsonRegularExpression("Ma", "i")); // Búsqueda parcial
+        //filters &= Builders<Prospect>.Filter.Regex("LastName", new BsonRegularExpression("Ma", "i")); // Búsqueda parcial
+        //filters &= Builders<Prospect>.Filter.Regex("LastName", new BsonRegularExpression("Ma", "i")); // Búsqueda parcial
+
         var prospects = await _prospectCollection.Find(_ => true)
-                                                 .Skip(skip)
-                                                 .Limit(pageSize)
+                                                 //.Skip(skip)
+                                                 //.Limit(pageSize)
                                                  .ToListAsync();
 
         foreach (var p in prospects)

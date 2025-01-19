@@ -6,6 +6,7 @@ using LeadTrackApi.Domain.Entities;
 using LeadTrackApi.Domain.Enums;
 using LeadTrackApi.Domain.Models;
 using LeadTrackApi.Persistence.Service;
+using Mapster;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 
@@ -123,6 +124,11 @@ namespace LeadTrackApi.Application.Business
         public async Task<long> GetProspectsCount()
         {
             return await _mongoService.GetTotalProspectsCount();
+        }
+
+        public async Task SaveInteraction(InteractionDTO interaction)
+        {
+            await _mongoService.AddInteraction(interaction);
         }
     }
 }
