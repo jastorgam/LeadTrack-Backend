@@ -15,6 +15,7 @@ public class MongoDBService
 {
     private readonly IMongoCollection<User> _userCollection;
     private readonly IMongoCollection<Prospect> _prospectCollection;
+    private readonly IMongoCollection<FullProspect> _fullProspectCollection;
     private readonly IMongoCollection<Interactions> _interactionsCollection;
     private readonly IMongoCollection<Industry> _industryCollection;
     private readonly IMongoCollection<Role> _roleCollection;
@@ -22,6 +23,7 @@ public class MongoDBService
     private readonly List<Role> _roles;
     private readonly List<Industry> _industries;
     private readonly List<User> _users;
+    private readonly ILogger<MongoDBService> logger;
 
     public MongoDBService(IOptions<MongoDBSettings> mongoDBSettings)
     {
@@ -33,6 +35,7 @@ public class MongoDBService
         _companyCollection = database.GetCollection<Company>("Companies");
         _industryCollection = database.GetCollection<Industry>("Industries");
         _prospectCollection = database.GetCollection<Prospect>("Prospects");
+        _fullProspectCollection = database.GetCollection<FullProspect>("FullProspects");
         _interactionsCollection = database.GetCollection<Interactions>("Interactions");
 
 
@@ -82,9 +85,44 @@ public class MongoDBService
         }
         catch (Exception ex)
         {
-            throw;
+            throw ex;
         }
     }
+
+
+    public async Task<FullProspect> AddFullProspect(FullProspect p)
+    {
+        try
+        {
+            var filter = Builders<FullProspect>.Filter.Eq(prospect => prospect.Name, p.Name) &
+                         Builders<FullProspect>.Filter.Eq(prospect => prospect.LastName, p.LastName) &
+                         Builders<FullProspect>.Filter.ElemMatch(prospect => prospect.Emails, email => email.Address == p.Emails.FirstOrDefault().Address);
+
+            var existingProspect = await _fullProspectCollection.Find(filter).FirstOrDefaultAsync();
+            if (existingProspect != null) return existingProspect;
+
+            await _fullProspectCollection.InsertOneAsync(p);
+            return p;
+        }
+        catch (Exception ex)
+        {
+            throw ex;
+        }
+    }
+
+    public async Task<IEnumerable<FullProspect>> GetFullProspects()
+    {
+        try
+        {
+            var resp = await _fullProspectCollection.Find(_ => true).ToListAsync();
+            return resp;
+        }
+        catch (Exception ex)
+        {
+            throw ex;
+        }
+    }
+
 
     public async Task<Interactions> AddInteraction(InteractionDTO p)
     {

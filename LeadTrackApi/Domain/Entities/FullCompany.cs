@@ -4,15 +4,12 @@ using NPOI.OpenXmlFormats.Spreadsheet;
 
 namespace LeadTrackApi.Domain.Entities;
 
-public class Company
+public class FullCompany
 {
-    [BsonId]
-    [BsonRepresentation(BsonType.ObjectId)]
-    public string Id { get; set; }
     public string Name { get; set; }
     public string Address { get; set; }
     public string Domain { get; set; }
     public string Size { get; set; }
-    public string IdIndustry { get; set; }
-    public Industry Industry { get; set; }
+    public string Type { get; set; }
+    public string Description { get; set; }
 }

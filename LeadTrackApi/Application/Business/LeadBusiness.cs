@@ -38,7 +38,7 @@ namespace LeadTrackApi.Application.Business
             return await _mongoService.GetInteractionsByProspect(idProspect);
         }
 
-        public async Task<List<Dictionary<string, object>>> ProcessFile(Stream stream)
+        public async Task<List<Dictionary<string, object>>> ProcessFilex(Stream stream)
         {
             var schema = new FileSchema()
             {
@@ -107,6 +107,78 @@ namespace LeadTrackApi.Application.Business
                     };
 
                     await _mongoService.AddProspect(prospects);
+                };
+
+                remover.ForEach(e => ret.Remove(e));
+
+                return ret;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error en el proceso de lectura", ex);
+            }
+
+
+        }
+
+
+        public async Task<List<Dictionary<string, object>>> ProcessFile(Stream stream)
+        {
+            var schema = new FileSchema()
+            {
+                Type = "excel",
+                BodyFields =
+                 [
+                    new () { Name = "name", Type = "string" },
+                    new () { Name = "last_name", Type = "string" },
+                    new () { Name = "email", Type = "string" },
+                    new () { Name = "job_title", Type = "string" },
+                    new () { Name = "industry", Type = "string" },
+                    new () { Name = "name_company", Type = "string" },
+                    new () { Name = "address", Type = "string" },
+                    new () { Name = "size", Type = "string" },
+                    new () { Name = "domain", Type = "string" },
+                    new () { Name = "linkedin", Type = "string" },
+                ]
+            };
+
+            try
+            {
+                var reader = new ExcelFileReader(schema);
+                var resp = reader.ReadFile(stream);
+                var ret = resp.ToList();
+
+                var remover = new List<Dictionary<string, object>>();
+
+                foreach (var item in ret)
+                {
+                    if (string.IsNullOrEmpty(item["name"].ToString()) && string.IsNullOrEmpty(item["name"].ToString()))
+                    {
+                        remover.Add(item);
+                        continue;
+                    }
+
+                    var prospects = new FullProspect()
+                    {
+                        Name = item["name"].ToString(),
+                        LastName = item["last_name"].ToString(),
+                        FullName = $"{item["name"].ToString().Trim()} {item["last_name"].ToString().Trim()}",
+                        Emails = [new Email() { Address = item["email"].ToString(), Type = EmailType.Personal.ToString(), Valid = true }],
+                        Position = item["job_title"].ToString(),
+                        Company = new FullCompany()
+                        {
+                            Name = item["name_company"].ToString(),
+                            Address = item["address"].ToString(),
+                            Size = item["size"].ToString(),
+                            Domain = item["domain"].ToString(),
+                            Description = item["industry"].ToString(),
+                            Type = item["industry"].ToString(),
+                        },
+                        SocialNetworks = [new SocialNetwork() { Url = item["linkedin"].ToString(), Type = SocialNetworkType.LinkedIn.ToString() }],
+                        Status = false
+                    };
+
+                    await _mongoService.AddFullProspect(prospects);
                 };
 
                 remover.ForEach(e => ret.Remove(e));
