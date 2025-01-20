@@ -16,13 +16,12 @@ namespace LeadTrackApi.Application.Business.Tests
     public class AuthBusinessTests(TestConfiguration testConfiguration, ITestOutputHelper console) : IClassFixture<TestConfiguration>
     {
         private readonly IAuthBusiness _authBusiness = testConfiguration.ServiceProvider.GetService<IAuthBusiness>() ?? throw new ArgumentNullException();
-        private readonly ITestOutputHelper _console = console;
 
         [Fact()]
         public async Task LoginTest()
         {
             var resp = await _authBusiness.Login("admin@leadtrack.cl", "123456");
-            _console.WriteLine(resp.Dump());
+            console.WriteLine(resp.Dump());
             Assert.True(resp.UserName == "Admin");
 
         }

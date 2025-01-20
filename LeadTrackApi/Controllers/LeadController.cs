@@ -65,7 +65,7 @@ public class LeadController(ILeadBusiness leadBusiness, ILogger<LeadController> 
     {
         try
         {
-            var resp = await _business.GetProspects(page, pageSize);
+            var resp = await _business.GetFullProspects();
             return Ok(resp);
         }
         catch (Exception ex)

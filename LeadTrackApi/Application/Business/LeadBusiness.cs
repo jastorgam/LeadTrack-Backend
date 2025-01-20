@@ -33,6 +33,12 @@ namespace LeadTrackApi.Application.Business
             return resp;
         }
 
+        public async Task<IEnumerable<FullProspect>> GetFullProspects()
+        {
+            var resp = await _mongoService.GetFullProspects();
+            return resp;
+        }
+
         public async Task<List<InteractionDTO>> GetInteractions(string idProspect)
         {
             return await _mongoService.GetInteractionsByProspect(idProspect);

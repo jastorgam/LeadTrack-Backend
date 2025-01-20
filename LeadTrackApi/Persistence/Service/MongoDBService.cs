@@ -1,6 +1,7 @@
 ﻿using ICSharpCode.SharpZipLib.Core;
 using LeadTrackApi.Domain.DTOs;
 using LeadTrackApi.Domain.Entities;
+using LeadTrackApi.Domain.Enums;
 using LeadTrackApi.Domain.Models.Response;
 using LeadTrackApi.Persistence.Models;
 using Mapster;
@@ -94,11 +95,9 @@ public class MongoDBService
     {
         try
         {
-            var filter = Builders<FullProspect>.Filter.Eq(prospect => prospect.Name, p.Name) &
-                         Builders<FullProspect>.Filter.Eq(prospect => prospect.LastName, p.LastName) &
-                         Builders<FullProspect>.Filter.ElemMatch(prospect => prospect.Emails, email => email.Address == p.Emails.FirstOrDefault().Address);
-
+            var filter = Builders<FullProspect>.Filter.Eq(prospect => prospect.FullName, p.FullName);
             var existingProspect = await _fullProspectCollection.Find(filter).FirstOrDefaultAsync();
+
             if (existingProspect != null) return existingProspect;
 
             await _fullProspectCollection.InsertOneAsync(p);
@@ -130,6 +129,20 @@ public class MongoDBService
         interaction.UserId = _users.Find(u => u.UserName == p.UserName).Id;
         await _interactionsCollection.InsertOneAsync(interaction);
         return interaction;
+    }
+
+    public async Task<FullProspect> AddFullInteraction(string idProspect, FullInteractions interactions)
+    {
+        var filter = Builders<FullProspect>.Filter.Eq(p => p.Id, idProspect);
+        var update = Builders<FullProspect>.Update.Push(p => p.Interactions, interactions);
+        var options = new FindOneAndUpdateOptions<FullProspect>
+        {
+            ReturnDocument = ReturnDocument.After // Devuelve el documento después de la actualización
+        };
+
+        // Actualiza el documento en la colección
+        var result = await _fullProspectCollection.FindOneAndUpdateAsync(filter, update, options);
+        return result;
     }
 
     public async Task<List<ProspectDTO>> GetProspects(int page = 1, int pageSize = 10)

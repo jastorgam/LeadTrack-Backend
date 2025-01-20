@@ -17,5 +17,8 @@ public class FullProspect
     public List<Email> Emails { get; set; }
     public List<SocialNetwork> SocialNetworks { get; set; }
     public FullCompany Company { get; set; }
+    public List<FullInteractions> Interactions { get; set; }
     public bool Status { get; set; }
+    public DateTime? DateModify { get; set; } = null;
+    public string UserModify { get; set; }
 }

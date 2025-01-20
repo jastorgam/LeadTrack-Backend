@@ -20,6 +20,7 @@ namespace LeadTrack.API.Test
                      reloadOnChange: true)
                .Build();
 
+            serviceCollection.AddLogging();
             serviceCollection.AddSingleton<IConfiguration>(configuration);
 
             serviceCollection.RegisterApplicationExtension();
