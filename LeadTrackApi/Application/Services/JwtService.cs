@@ -27,17 +27,15 @@ public class JwtService
 
         var claims = new[]
         {
-            new Claim(JwtRegisteredClaimNames.Sub, email),
-            new Claim(ClaimTypes.Role, role),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString(), ClaimValueTypes.Integer64)
+            new Claim(ClaimTypes.Name, email),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
         var token = new JwtSecurityToken(
             issuer: _iusser,
             audience: _audience,
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(TokenExpirationMinutes),
+            expires: DateTime.UtcNow.AddHours(1),
             signingCredentials: credentials
         );
 

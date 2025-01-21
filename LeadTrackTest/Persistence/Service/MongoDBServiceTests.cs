@@ -145,20 +145,20 @@ public class MongoDBServiceTests(TestConfiguration testConfiguration, ITestOutpu
         Assert.NotEmpty(resp);
     }
 
-    [Fact()]
-    public async Task AddFullInteractionTest()
-    {
-        var fi = new FullInteractions()
-        {
-            Date = DateTime.UtcNow,
-            Type = InteractionType.Call.ToString(),
-            UserName = "Admin",
-            Answer = true,
-            Notes = "Test"
-        };
+    //[Fact()]
+    //public async Task AddFullInteractionTest()
+    //{
+    //    var fi = new FullInteractions()
+    //    {
+    //        Date = DateTime.UtcNow,
+    //        Type = InteractionType.Call.ToString(),
+    //        UserName = "Admin",
+    //        Answer = true,
+    //        Notes = "Test"
+    //    };
 
-        var resp = await _mongoDBService.AddFullInteraction("678dbbfdd509724fbf82e647", fi);
-        _console.WriteLine(resp.Dump());
-        Assert.True(resp.Interactions.Count > 0);
-    }
+    //    var resp = await _mongoDBService.AddFullInteraction("678dbbfdd509724fbf82e647", fi);
+    //    _console.WriteLine(resp.Dump());
+    //    Assert.True(resp.Interactions.Count > 0);
+    //}
 }

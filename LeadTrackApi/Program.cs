@@ -13,6 +13,15 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        builder.Logging.AddConsole();
+        builder.Logging.AddDebug();
+
+        // Obtener el logger correctamente configurado
+        var logger = LoggerFactory.Create(logging =>
+        {
+            logging.AddConsole();
+            logging.AddDebug();
+        }).CreateLogger<Program>();
 
         // Add services to the container.
         builder.Services.Configure<RequestLocalizationOptions>(options =>
@@ -23,7 +32,7 @@ public class Program
         });
 
         var security = builder.Configuration.GetSection("Security");
-        var key = Encoding.ASCII.GetBytes(security["SecretKey"]);
+        var key = Encoding.UTF8.GetBytes(security["SecretKey"]);
 
         builder.Services.AddAuthentication(options =>
         {
@@ -42,6 +51,19 @@ public class Program
                 ValidAudience = security["Audience"],
                 IssuerSigningKey = new SymmetricSecurityKey(key)
             };
+            options.Events = new JwtBearerEvents
+            {
+                OnAuthenticationFailed = context =>
+                {
+                    logger.LogWarning($"Authentication failed: {context.Exception.Message}");
+                    return Task.CompletedTask;
+                },
+                OnTokenValidated = context =>
+                {
+                    logger.LogWarning("Token validated successfully");
+                    return Task.CompletedTask;
+                }
+            };
         });
 
         var cultureInfo = new CultureInfo("es-CL");
@@ -50,6 +72,7 @@ public class Program
 
         var configuration = builder.Configuration;
 
+        builder.Services.AddAuthorization();
         builder.Services.AddControllers();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();

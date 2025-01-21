@@ -97,7 +97,7 @@ namespace LeadTrackApi.Application.Business
                         Address = item["address"].ToString(),
                         Size = item["size"].ToString(),
                         Domain = item["domain"].ToString(),
-                        IdIndustry = item["industry"].ToString()
+                        IdIndustry = industry.Id
                     };
 
                     company = await _mongoService.AddCompany(company);
@@ -147,6 +147,7 @@ namespace LeadTrackApi.Application.Business
                     new () { Name = "linkedin", Type = "string" },
                 ]
             };
+            logger.LogWarning(schema.Dump());
 
             try
             {
@@ -155,6 +156,7 @@ namespace LeadTrackApi.Application.Business
                 var ret = resp.ToList();
 
                 var remover = new List<Dictionary<string, object>>();
+                var i = 1;
 
                 foreach (var item in ret)
                 {
@@ -170,6 +172,8 @@ namespace LeadTrackApi.Application.Business
                         LastName = item["last_name"].ToString(),
                         FullName = $"{item["name"].ToString().Trim()} {item["last_name"].ToString().Trim()}",
                         Emails = [new Email() { Address = item["email"].ToString(), Type = EmailType.Personal.ToString(), Valid = true }],
+                        Phones = i++ == 1 ? [new Phone() { PhoneNumber = "123456", Type = PhoneType.Personal.ToString(), Valid = true }] : [],
+                        Interactions = [],
                         Position = item["job_title"].ToString(),
                         Company = new FullCompany()
                         {
@@ -204,9 +208,23 @@ namespace LeadTrackApi.Application.Business
             return await _mongoService.GetTotalProspectsCount();
         }
 
-        public async Task SaveInteraction(InteractionDTO interaction)
+        public async Task<FullProspect> SaveInteraction(InteractionDTO interaction)
         {
-            await _mongoService.AddInteraction(interaction);
+            var fi = new FullInteractions()
+            {
+                Notes = interaction.Notes,
+                UserName = interaction.UserName,
+                Answer = interaction.Answer,
+                Date = DateTime.UtcNow,
+                Type = interaction.Type
+            };
+
+            return await _mongoService.AddFullInteraction(interaction.ProspectId, fi);
+        }
+
+        public async Task<FullProspect> GetFullProspect(string id)
+        {
+            return await _mongoService.GetFullProspect(id);
         }
     }
 }

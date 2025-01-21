@@ -6,7 +6,6 @@ namespace LeadTrackApi.Domain.DTOs;
 
 public class InteractionDTO
 {
-    public string Id { get; set; }
     public string ProspectId { get; set; }
     public string UserName { get; set; }
     public string Type { get; set; }

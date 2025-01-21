@@ -122,6 +122,19 @@ public class MongoDBService
         }
     }
 
+    public async Task<FullProspect> GetFullProspect(string id)
+    {
+        try
+        {
+            var resp = await _fullProspectCollection.Find(p => p.Id == id).FirstOrDefaultAsync();
+            return resp;
+        }
+        catch (Exception ex)
+        {
+            throw ex;
+        }
+    }
+
 
     public async Task<Interactions> AddInteraction(InteractionDTO p)
     {
@@ -135,12 +148,8 @@ public class MongoDBService
     {
         var filter = Builders<FullProspect>.Filter.Eq(p => p.Id, idProspect);
         var update = Builders<FullProspect>.Update.Push(p => p.Interactions, interactions);
-        var options = new FindOneAndUpdateOptions<FullProspect>
-        {
-            ReturnDocument = ReturnDocument.After // Devuelve el documento después de la actualización
-        };
+        var options = new FindOneAndUpdateOptions<FullProspect> { ReturnDocument = ReturnDocument.After };
 
-        // Actualiza el documento en la colección
         var result = await _fullProspectCollection.FindOneAndUpdateAsync(filter, update, options);
         return result;
     }
@@ -149,7 +158,6 @@ public class MongoDBService
     {
         var prospectDTOs = new List<ProspectDTO>();
         var skip = (page - 1) * pageSize;
-
 
         //var filters = Builders<Prospect>.Filter.Empty;
         //filters &= Builders<Prospect>.Filter.Regex("Name", new BsonRegularExpression("Ma", "i")); // Búsqueda parcial
@@ -171,9 +179,7 @@ public class MongoDBService
             prospectDTOs.Add(prospectDTO);
         };
 
-
         return prospectDTOs;
-
     }
 
     public async Task<List<InteractionDTO>> GetInteractionsByProspect(string idProspect)
