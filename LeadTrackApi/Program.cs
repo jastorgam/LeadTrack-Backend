@@ -16,6 +16,10 @@ public class Program
         builder.Logging.AddConsole();
         builder.Logging.AddDebug();
 
+        builder.Configuration
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true);
+
         // Obtener el logger correctamente configurado
         var logger = LoggerFactory.Create(logging =>
         {
@@ -65,6 +69,15 @@ public class Program
                 }
             };
         });
+        //builder.WebHost.ConfigureKestrel(options =>
+        //{
+        //    options.ListenAnyIP(5000); // Escucha en todos los interfaces en el puerto 5000
+        //    options.ListenAnyIP(5001, listenOptions =>
+        //    {
+        //        listenOptions.UseHttps("/etc/nginx/ssl/certificate.crt", "passwordcita");
+        //    });
+        //});
+
 
         var cultureInfo = new CultureInfo("es-CL");
         CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
@@ -89,13 +102,10 @@ public class Program
            .AllowAnyMethod()
            .WithExposedHeaders("Content-Disposition"));
 
+        //app.UseHttpsRedirection();
 
-        // Configure the HTTP request pipeline.
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseSwagger();
-            app.UseSwaggerUI();
-        }
+        app.UseSwagger();
+        app.UseSwaggerUI();
 
         app.UseAuthentication();
         app.UseAuthorization();

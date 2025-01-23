@@ -11,10 +11,10 @@ EXPOSE 8080
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["LeadTrackApi/LeadTrackApi.csproj", "LeadTrackApi/"]
-RUN dotnet restore "./LeadTrackApi/LeadTrackApi.csproj"
+COPY ["LeadTrackApi.csproj", "."]
+RUN dotnet restore "./LeadTrackApi.csproj"
 COPY . .
-WORKDIR "/src/LeadTrackApi"
+WORKDIR "/src/."
 RUN dotnet build "./LeadTrackApi.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # This stage is used to publish the service project to be copied to the final stage

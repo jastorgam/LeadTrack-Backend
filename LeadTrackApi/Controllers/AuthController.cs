@@ -28,4 +28,21 @@ public class AuthController(IAuthBusiness authBusiness, ILogger<AuthController> 
             return Unauthorized();
         }
     }
+
+    [HttpGet]
+    [Route("hello")]
+    public async Task<IActionResult> Hello()
+    {
+        try
+        {
+
+            return Ok(new { msg = "Hello" });
+
+        }
+        catch (Exception e)
+        {
+            logger.LogError(message: e.ToError().ToString());
+            return Unauthorized();
+        }
+    }
 }
