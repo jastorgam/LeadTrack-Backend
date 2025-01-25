@@ -20,14 +20,20 @@ namespace LeadTrackApi.Controllers
             var section = configuration.GetSection(seccion);
             var configValues = new Dictionary<string, string>();
 
-            foreach (var child in section.GetChildren())
-            {
-                configValues[child.Key] = child.Value;
-            }
+            if (section.Value != null) configValues[section.Key] = section.Value;
+            getChildrens(section, configValues, section.Key);
 
             return Ok(configValues.Dump());
         }
 
+        private static void getChildrens(IConfigurationSection section, Dictionary<string, string> configValues, string father)
+        {
+            foreach (var child in section.GetChildren())
+            {
+                if (child.Value != null) configValues[$"{father}.{child.Key}"] = child.Value;
+                if (child.GetChildren().Any()) getChildrens(child, configValues, $"{father}.{child.Key}");
 
+            }
+        }
     }
 }
