@@ -6,7 +6,6 @@ USER $APP_UID
 WORKDIR /app
 EXPOSE 8080
 
-
 # This stage is used to build the service project
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
@@ -26,4 +25,5 @@ RUN dotnet publish "./LeadTrackApi.csproj" -c $BUILD_CONFIGURATION -o /app/publi
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+ENV ASPNETCORE_ENVIRONMENT=Production
 ENTRYPOINT ["dotnet", "LeadTrackApi.dll"]

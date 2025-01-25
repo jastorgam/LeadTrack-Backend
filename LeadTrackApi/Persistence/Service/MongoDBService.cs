@@ -51,6 +51,9 @@ public class MongoDBService
     public async Task<UserDto> AddUser(string email, string password, string userName, string idRole)
     {
         var newUser = new User { Email = email, Password = password, UserName = userName, IdRole = idRole };
+        var user = await _userCollection.Find(u => u.Email == email).FirstOrDefaultAsync();
+        if (user != null) return user.Adapt<UserDto>();
+
         await _userCollection.InsertOneAsync(newUser);
         return newUser.Adapt<UserDto>();
     }
@@ -159,27 +162,33 @@ public class MongoDBService
         var prospectDTOs = new List<ProspectDTO>();
         var skip = (page - 1) * pageSize;
 
-        //var filters = Builders<Prospect>.Filter.Empty;
-        //filters &= Builders<Prospect>.Filter.Regex("Name", new BsonRegularExpression("Ma", "i")); // Búsqueda parcial
-        //filters &= Builders<Prospect>.Filter.Regex("LastName", new BsonRegularExpression("Ma", "i")); // Búsqueda parcial
-        //filters &= Builders<Prospect>.Filter.Regex("LastName", new BsonRegularExpression("Ma", "i")); // Búsqueda parcial
-
         var prospects = await _prospectCollection.Find(_ => true)
                                                  //.Skip(skip)
                                                  //.Limit(pageSize)
                                                  .ToListAsync();
 
-        foreach (var p in prospects)
+        try
         {
-            var prospectDTO = p.Adapt<ProspectDTO>();
-            var company = await _companyCollection.Find(i => i.Id == p.IdCompany).FirstOrDefaultAsync();
-            var industry = _industries.FirstOrDefault(i => i.Id == company.IdIndustry);
-            prospectDTO.Company = company.Adapt<CompanyDTO>();
-            industry.Adapt(prospectDTO.Company);
-            prospectDTOs.Add(prospectDTO);
-        };
+            foreach (var p in prospects)
+            {
+                var prospectDTO = p.Adapt<ProspectDTO>();
+                var company = await _companyCollection.Find(i => i.Id == p.IdCompany).FirstOrDefaultAsync();
+                if (company != null)
+                {
+                    var industry = _industries.FirstOrDefault(i => i.Id == company.IdIndustry);
+                    prospectDTO.Company = company.Adapt<CompanyDTO>();
+                    industry.Adapt(prospectDTO.Company);
+                }
+                prospectDTOs.Add(prospectDTO);
+            };
 
-        return prospectDTOs;
+            return prospectDTOs;
+        }
+        catch (Exception ex)
+        {
+
+            throw ex;
+        }
     }
 
     public async Task<List<InteractionDTO>> GetInteractionsByProspect(string idProspect)
@@ -204,6 +213,9 @@ public class MongoDBService
 
     public async Task<Role> AddRole(Role r)
     {
+        var rol = await _roleCollection.Find(i => i.Name == r.Name).FirstOrDefaultAsync();
+        if (rol != null) return rol;
+
         await _roleCollection.InsertOneAsync(r);
         return r;
     }
@@ -242,4 +254,28 @@ public class MongoDBService
     {
         return await _prospectCollection.CountDocumentsAsync(_ => true);
     }
+
+    public async Task<FullProspect> UpdateFullProspect(FullProspectDTO fullProspect)
+    {
+        var newProspect = fullProspect.Adapt<FullProspect>();
+        var filter = Builders<FullProspect>.Filter.Eq(p => p.Id, fullProspect.Id);
+        var update = Builders<FullProspect>.Update
+            .Set(p => p.Name, newProspect.Name)
+            .Set(p => p.LastName, newProspect.LastName)
+            .Set(p => p.FullName, $"{newProspect.Name.Trim()} {newProspect.LastName.Trim()}")
+            .Set(p => p.Position, newProspect.Position)
+            .Set(p => p.Phones, newProspect.Phones)
+            .Set(p => p.Emails, newProspect.Emails)
+            .Set(p => p.Company, newProspect.Company)
+            .Set(p => p.Status, newProspect.Status)
+            .Set(p => p.UserModify, newProspect.UserModify)
+            .Set(p => p.DateModify, DateTime.UtcNow);
+
+        var options = new FindOneAndUpdateOptions<FullProspect> { ReturnDocument = ReturnDocument.After };
+        var updatedProspect = await _fullProspectCollection.FindOneAndUpdateAsync(filter, update, options);
+
+        return updatedProspect;
+    }
+
+
 }

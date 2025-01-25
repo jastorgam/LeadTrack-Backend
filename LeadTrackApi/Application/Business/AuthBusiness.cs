@@ -15,6 +15,7 @@ namespace LeadTrackApi.Application.Business
         {
             password = SecurityUtils.HashPassword(password);
 
+
             var resp = await _mongoDBService.Login(email, password) ?? throw new Exception("Invalid credentials");
 
             return new LoginResponse()

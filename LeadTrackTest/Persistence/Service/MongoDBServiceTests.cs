@@ -123,7 +123,7 @@ public class MongoDBServiceTests(TestConfiguration testConfiguration, ITestOutpu
     }
 
     [Fact()]
-    public async Task GetProspectsTest()
+    public async Task GetOldProspectsTest()
     {
         var resp = await _mongoDBService.GetProspects();
         _console.WriteLine(resp.Dump());

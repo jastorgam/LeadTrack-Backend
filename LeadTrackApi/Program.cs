@@ -95,14 +95,23 @@ public class Program
         builder.Services.RegisterRepositoryExtension(configuration);
 
         var app = builder.Build();
+        var allowedOrigins = new[] { "http://localhost:4200", "https://leadtrack-12e68.web.app" };
 
         app.UseCors(options => options
-           .AllowAnyOrigin()
-           .AllowAnyHeader()
-           .AllowAnyMethod()
-           .WithExposedHeaders("Content-Disposition"));
+            .SetIsOriginAllowed(origin =>
+            {
+                logger.LogInformation($"Origin: {origin}");
 
-        //app.UseHttpsRedirection();
+                if (allowedOrigins.Contains(origin)) return true;
+                if (origin.StartsWith("https://leadtrack-12e68.web.app")) return true;
+
+                logger.LogWarning($"Origin not allowed: {origin}");
+                return false;
+            })
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .WithExposedHeaders("Content-Disposition"));
+
 
         app.UseSwagger();
         app.UseSwaggerUI();

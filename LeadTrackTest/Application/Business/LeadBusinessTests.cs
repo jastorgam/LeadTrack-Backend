@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics;
 using LeadTrackApi.Application.Extensions;
 using Microsoft.Extensions.Logging;
+using NPOI.HSSF.Record.Aggregates;
 
 namespace LeadTrackApi.Application.Business.Tests;
 
@@ -28,6 +29,14 @@ public class LeadBusinessTests(TestConfiguration testConfiguration, ITestOutputH
         sw.Stop();
 
         console.WriteLine($"Elapsed={sw.ElapsedMilliseconds} ms");
+        console.WriteLine(resp.Dump());
+        Assert.NotNull(resp);
+    }
+
+    [Fact()]
+    public async Task GetReportTest()
+    {
+        var resp = await _business.GetReport();
         console.WriteLine(resp.Dump());
         Assert.NotNull(resp);
     }
