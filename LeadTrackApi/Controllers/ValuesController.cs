@@ -11,8 +11,12 @@ namespace LeadTrackApi.Controllers
     {
         [HttpGet]
         [Route("GetConfig")]
-        public Dictionary<string, string> GetConfig(string seccion)
+        public async Task<IActionResult> GetConfig(string seccion)
         {
+            var key = Request.Headers.TryGetValue("key", out var headerValue);
+            if (!key || headerValue != configuration.GetValue<string>("Key"))
+                return Unauthorized();
+
             var section = configuration.GetSection(seccion);
             var configValues = new Dictionary<string, string>();
 
@@ -21,7 +25,7 @@ namespace LeadTrackApi.Controllers
                 configValues[child.Key] = child.Value;
             }
 
-            return configValues;
+            return Ok(configValues.Dump());
         }
 
 
