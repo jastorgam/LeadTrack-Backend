@@ -8,6 +8,7 @@ $imageTag = "us-central1-docker.pkg.dev/leadtrack-448703/jam-repo/$serviceName"
 
 
 try {
+    dotnet clean
     Write-Host "Creación de la imagen"
     docker build -t $imageTag . 
     if ($LASTEXITCODE -ne 0) { throw "La construcción falló. No se puede continuar con el push ni el despliegue." }
