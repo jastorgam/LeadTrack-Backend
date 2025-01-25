@@ -19,37 +19,44 @@ public class LeadController(ILeadBusiness leadBusiness, ILogger<LeadController> 
     private readonly ILogger<LeadController> _logger = logger;
     private readonly ILeadBusiness _business = leadBusiness;
 
-    [HttpPost]
-    [Route("add-user")]
-    public async Task<IActionResult> AddUser([FromBody] AddUserRequest ur)
-    {
-        try
-        {
-            var resp = await _business.AddUser(ur.Email, ur.Password, ur.UserName, ur.idRole);
-            return Ok(resp);
-        }
-        catch (Exception ex)
-        {
-            var msj = "Error al agregar usuario";
-            _logger.LogError(ex, msj);
-            return BadRequest(ex.ToError(msj));
-        }
-    }
+    //[HttpPost]
+    //[Route("add-user")]
+    //public async Task<IActionResult> AddUser([FromBody] AddUserRequest ur)
+    //{
+    //    try
+    //    {
+    //var resp = await _business.AddUser(ur.Email, ur.Password, ur.UserName, ur.idRole);
+    //        return Ok(resp);
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        var msj = "Error al agregar usuario";
+    //        _logger.LogError(ex, msj);
+    //        return BadRequest(ex.ToError(msj));
+    //    }
+    //}
 
+    /// <summary>
+    /// Metodo para subir archivo de prospectos
+    /// </summary>
+    /// <param name="file"></param>
+    /// <returns></returns>
     [HttpPost]
     [Route("verifysavefile")]
     [Authorize]
     public async Task<IActionResult> SaveProspectsFile(IFormFile file)
     {
-        if (file == null || file.Length == 0) return BadRequest("No se ha proporcionado un archivo válido.");
+        if (file == null || file.Length == 0)
+            return BadRequest("No se ha proporcionado un archivo válido.");
+
         _logger.LogInformation($"File content {file.ContentType}");
-        if (file.ContentType != "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") return BadRequest("El archivo debe ser de tipo excel xlsx.");
+
+        if (file.ContentType != "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            return BadRequest("El archivo debe ser de tipo excel xlsx.");
 
         try
         {
             _logger.LogInformation($"Archivo {file.FileName} recibido y procesado correctamente.");
-
-            // Aquí puedes procesar el contenido del archivo con tu lógica de negocio
             var result = await _business.ProcessFile(file.OpenReadStream());
 
             return Ok(result);
@@ -62,34 +69,35 @@ public class LeadController(ILeadBusiness leadBusiness, ILogger<LeadController> 
         }
     }
 
-    [HttpPost]
-    [Route("verifysavefile-old")]
-    [Authorize]
-    public async Task<IActionResult> SaveProspectOld(IFormFile file)
-    {
-        if (file == null || file.Length == 0) return BadRequest("No se ha proporcionado un archivo válido.");
-        _logger.LogInformation($"File content {file.ContentType}");
-        if (file.ContentType != "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") return BadRequest("El archivo debe ser de tipo excel xlsx.");
+    //[HttpPost]
+    //[Route("verifysavefile-old")]
+    //[Authorize]
+    //public async Task<IActionResult> SaveProspectOld(IFormFile file)
+    //{
+    //    if (file == null || file.Length == 0) return BadRequest("No se ha proporcionado un archivo válido.");
+    //    _logger.LogInformation($"File content {file.ContentType}");
+    //    if (file.ContentType != "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") return BadRequest("El archivo debe ser de tipo excel xlsx.");
 
-        try
-        {
-            _logger.LogInformation($"Archivo {file.FileName} recibido y procesado correctamente.");
+    //    try
+    //    {
+    //        _logger.LogInformation($"Archivo {file.FileName} recibido y procesado correctamente.");
+    //        var result = await _business.ProcessFileOld(file.OpenReadStream());
 
-            // Aquí puedes procesar el contenido del archivo con tu lógica de negocio
-            var result = await _business.ProcessFileOld(file.OpenReadStream());
-
-            return Ok(result);
-        }
-        catch (Exception ex)
-        {
-            var msj = "Error al procesar archivo";
-            _logger.LogError(ex, msj);
-            return BadRequest(ex.ToError(msj));
-        }
-    }
+    //        return Ok(result);
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        var msj = "Error al procesar archivo";
+    //        _logger.LogError(ex, msj);
+    //        return BadRequest(ex.ToError(msj));
+    //    }
+    //}
 
 
-
+    /// <summary>
+    /// Listado de prospectos
+    /// </summary>
+    /// <returns></returns>
     [HttpGet]
     [Route("listLeads")]
     [Authorize]
@@ -108,6 +116,11 @@ public class LeadController(ILeadBusiness leadBusiness, ILogger<LeadController> 
         }
     }
 
+    /// <summary>
+    /// Rescata un prospecto por id
+    /// </summary>
+    /// <param name="idLead"></param>
+    /// <returns></returns>
     [HttpGet]
     [Route("{idLead}")]
     [Authorize]
@@ -127,6 +140,11 @@ public class LeadController(ILeadBusiness leadBusiness, ILogger<LeadController> 
     }
 
 
+    /// <summary>
+    /// Agregar interacción a un prospecto
+    /// </summary>
+    /// <param name="interaction"></param>
+    /// <returns></returns>
     [HttpPost]
     [Route("addInteraction")]
     [Authorize]
@@ -146,6 +164,10 @@ public class LeadController(ILeadBusiness leadBusiness, ILogger<LeadController> 
 
     }
 
+    /// <summary>
+    /// Reporte de interacciones para usuario admin
+    /// </summary>
+    /// <returns></returns>
     [HttpGet]
     [Route("getReport")]
     [Authorize]
@@ -165,8 +187,11 @@ public class LeadController(ILeadBusiness leadBusiness, ILogger<LeadController> 
 
     }
 
-
-
+    /// <summary>
+    /// Actualizar prospecto
+    /// </summary>
+    /// <param name="fullProspect"></param>
+    /// <returns></returns>
     [HttpPut]
     [Authorize]
     public async Task<IActionResult> UpdateProspect([FromBody] FullProspectDTO fullProspect)

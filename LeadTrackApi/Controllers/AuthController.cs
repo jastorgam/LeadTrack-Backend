@@ -12,6 +12,11 @@ public class AuthController(IAuthBusiness authBusiness, ILogger<AuthController> 
 {
     private readonly IAuthBusiness _authBusiness = authBusiness;
 
+    /// <summary>
+    /// Metodo de login para obtener token de autenticacion
+    /// </summary>
+    /// <param name="loginRequest"></param>
+    /// <returns></returns>
     [HttpPost]
     [Route("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
@@ -29,20 +34,20 @@ public class AuthController(IAuthBusiness authBusiness, ILogger<AuthController> 
         }
     }
 
-    [HttpGet]
-    [Route("hello")]
-    public async Task<IActionResult> Hello()
-    {
-        try
-        {
+    //[HttpGet]
+    //[Route("hello")]
+    //public async Task<IActionResult> Hello()
+    //{
+    //    try
+    //    {
 
-            return Ok(new { msg = "Hello" });
+    //        return Ok(new { msg = "Hello" });
 
-        }
-        catch (Exception e)
-        {
-            logger.LogError(message: e.ToError().ToString());
-            return Unauthorized();
-        }
-    }
+    //    }
+    //    catch (Exception e)
+    //    {
+    //        logger.LogError(message: e.ToError().ToString());
+    //        return Unauthorized();
+    //    }
+    //}
 }
